@@ -80,6 +80,13 @@ impl PyRecognizer {
         self.inner.set_partial_words(on.is_truthy()?);
         Ok(())
     }
+    /// A host endpoint bound: a final once the trailing silence reaches `trailing_ms` (0 or None
+    /// removes it), unless `extending_veto_nats` is set and a reading extending the partial by a
+    /// further word is within that many nats of it.
+    #[pyo3(signature = (trailing_ms, extending_veto_nats = None))]
+    fn SetEndpointBound(&mut self, trailing_ms: Option<f32>, extending_veto_nats: Option<f32>) {
+        self.inner.set_endpoint_bound(trailing_ms.filter(|&m| m > 0.0), extending_veto_nats.filter(|&n| n > 0.0));
+    }
     fn SetPartialAlternatives(&mut self, n: usize) {
         self.inner.set_alternatives(n);
     }
