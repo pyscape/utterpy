@@ -141,5 +141,8 @@ fn utterpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("Recognizer", m.getattr("KaldiRecognizer")?)?;
     m.add_function(wrap_pyfunction!(SetLogLevel, m)?)?;
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
+    // Which runtime decoded, rather than which checkout a benchmark script was read from: the
+    // binding is a compiled artifact and can be any age.
+    m.add("UTTER_REVISION", utter::REVISION)?;
     Ok(())
 }
