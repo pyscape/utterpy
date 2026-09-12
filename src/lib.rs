@@ -55,11 +55,14 @@ impl PyRecognizer {
         Ok(PyRecognizer { inner, _model: arc })
     }
 
-    fn SetWords(&mut self, on: bool) {
-        self.inner.set_words(on);
+    /// Any value Python considers truthy, as the vosk wheel accepts.
+    fn SetWords(&mut self, on: &Bound<'_, PyAny>) -> PyResult<()> {
+        self.inner.set_words(on.is_truthy()?);
+        Ok(())
     }
-    fn SetPartialWords(&mut self, on: bool) {
-        self.inner.set_partial_words(on);
+    fn SetPartialWords(&mut self, on: &Bound<'_, PyAny>) -> PyResult<()> {
+        self.inner.set_partial_words(on.is_truthy()?);
+        Ok(())
     }
     fn SetPartialAlternatives(&mut self, n: usize) {
         self.inner.set_alternatives(n);
