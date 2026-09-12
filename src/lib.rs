@@ -99,7 +99,7 @@ impl PyRecognizer {
             .chunks_exact(2)
             .map(|c| i16::from_le_bytes([c[0], c[1]]))
             .collect();
-        let step = py.allow_threads(|| self.inner.accept(&samples));
+        let step = py.detach(|| self.inner.accept(&samples));
         Ok(step.endpoint)
     }
 
