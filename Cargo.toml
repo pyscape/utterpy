@@ -1,0 +1,22 @@
+[package]
+name = "utterpy"
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+description = "Python bindings for utter, the zero-dependency pure-Rust streaming speech decoder for Vosk (Kaldi nnet3) models"
+repository = "https://github.com/pyscape/utterpy"
+
+[lib]
+name = "utterpy"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.24", features = ["extension-module", "abi3-py39"] }
+# Until the core is published, the path is the dependency. The published form is
+# utter = { git = "https://github.com/pyscape/utter.git", rev = "<pushed commit>" }
+# with the [patch] section below pointing at a checkout beside this one.
+utter = { path = "../utter" }
+
+
+[profile.release]
+opt-level = 3
