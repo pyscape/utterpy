@@ -2,6 +2,9 @@
 //! (alias `Recognizer`), the same method names, and libvosk-shaped JSON strings, so a host
 //! written against vosk selects this package without an adapter.
 
+// The method names are the vosk wheel's, which are CamelCase.
+#![allow(non_snake_case)]
+
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
@@ -16,8 +19,11 @@ struct PyModel {
 impl PyModel {
     #[new]
     fn new(path: &str) -> PyResult<Self> {
-        let model = utter::Model::open(std::path::Path::new(path)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        Ok(PyModel { inner: Arc::new(model) })
+        let model = utter::Model::open(std::path::Path::new(path))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+        Ok(PyModel {
+            inner: Arc::new(model),
+        })
     }
 
     /// Word id for a word, -1 when the model does not know it (vosk's FindWord).
@@ -35,7 +41,10 @@ struct PyRecognizer {
 }
 
 fn options(unknown_cost: Option<f32>) -> utter::recognizer::RecognizerOptions {
-    utter::recognizer::RecognizerOptions { unknown_cost, ..Default::default() }
+    utter::recognizer::RecognizerOptions {
+        unknown_cost,
+        ..Default::default()
+    }
 }
 
 #[pymethods]
@@ -44,14 +53,21 @@ impl PyRecognizer {
     /// strings as vosk takes it. `unknown_cost` adds the model's unknown-word symbol.
     #[new]
     #[pyo3(signature = (model, sample_rate, grammar, unknown_cost = None))]
-    fn new(model: &PyModel, sample_rate: f32, grammar: &str, unknown_cost: Option<f32>) -> PyResult<Self> {
-        let words = utter::json::parse_string_array(grammar).map_err(|e| PyValueError::new_err(e.to_string()))?;
+    fn new(
+        model: &PyModel,
+        sample_rate: f32,
+        grammar: &str,
+        unknown_cost: Option<f32>,
+    ) -> PyResult<Self> {
+        let words = utter::json::parse_string_array(grammar)
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
         let arc = model.inner.clone();
         // The Arc keeps the model alive for the recognizer's lifetime; the reference handed to
         // the recognizer is derived from it and dropped with it.
         let model_ref: &'static utter::Model = unsafe { &*(Arc::as_ptr(&arc)) };
-        let inner = utter::Recognizer::with_options(model_ref, sample_rate, &words, &options(unknown_cost))
-            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        let inner =
+            utter::Recognizer::with_options(model_ref, sample_rate, &words, &options(unknown_cost))
+                .map_err(|e| PyValueError::new_err(e.to_string()))?;
         Ok(PyRecognizer { inner, _model: arc })
     }
 
@@ -75,9 +91,14 @@ impl PyRecognizer {
     fn AcceptWaveform(&mut self, py: Python<'_>, data: &Bound<'_, PyBytes>) -> PyResult<bool> {
         let bytes = data.as_bytes();
         if bytes.len() % 2 != 0 {
-            return Err(PyValueError::new_err("AcceptWaveform wants 16-bit PCM: an even number of bytes"));
+            return Err(PyValueError::new_err(
+                "AcceptWaveform wants 16-bit PCM: an even number of bytes",
+            ));
         }
-        let samples: Vec<i16> = bytes.chunks_exact(2).map(|c| i16::from_le_bytes([c[0], c[1]])).collect();
+        let samples: Vec<i16> = bytes
+            .chunks_exact(2)
+            .map(|c| i16::from_le_bytes([c[0], c[1]]))
+            .collect();
         let step = py.allow_threads(|| self.inner.accept(&samples));
         Ok(step.endpoint)
     }

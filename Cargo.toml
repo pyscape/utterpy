@@ -14,10 +14,6 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.24", features = ["extension-module", "abi3-py39"] }
 utter = { git = "https://github.com/pyscape/utter.git", rev = "248cd20dae0994f36b04da476b66b24a7d11b313" }
 
-# A checkout of the core beside this one is built instead of the pinned revision.
-[patch."https://github.com/pyscape/utter.git"]
-utter = { path = "../utter" }
-
 
 [profile.release]
 opt-level = 3

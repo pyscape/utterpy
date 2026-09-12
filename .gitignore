@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# local build configuration, including the path patch for a core checkout beside this one
+.cargo/

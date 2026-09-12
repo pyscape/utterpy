@@ -38,9 +38,15 @@ maturin build --release          # a wheel under target/wheels
 ```
 
 The core is fetched from the pinned revision of
-github.com/pyscape/utter; with a checkout beside this one at `../utter`
-the `[patch]` section in `Cargo.toml` builds against it instead. The wheel
-has no runtime dependencies.
+github.com/pyscape/utter. To build against a checkout beside this one
+instead, put this in `.cargo/config.toml` (ignored by git):
+
+```toml
+[patch."https://github.com/pyscape/utter.git"]
+utter = { path = "../utter" }
+```
+
+The wheel has no runtime dependencies.
 
 ## Release
 
