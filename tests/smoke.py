@@ -1,9 +1,20 @@
 """Import the extension and check the vosk-shaped surface without a model."""
+
 import utterpy
 
 assert utterpy.Recognizer is utterpy.KaldiRecognizer
-for name in ["SetWords", "SetPartialWords", "SetPartialAlternatives", "SetMaxAlternatives",
-             "AcceptWaveform", "PartialResult", "Result", "FinalResult", "Reset", "DecodedSample"]:
+for name in [
+    "SetWords",
+    "SetPartialWords",
+    "SetPartialAlternatives",
+    "SetMaxAlternatives",
+    "AcceptWaveform",
+    "PartialResult",
+    "Result",
+    "FinalResult",
+    "Reset",
+    "DecodedSample",
+]:
     assert hasattr(utterpy.KaldiRecognizer, name), name
 assert hasattr(utterpy.Model, "FindWord")
 utterpy.SetLogLevel(-1)
