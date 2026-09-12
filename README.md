@@ -41,3 +41,12 @@ The core is fetched from the pinned revision of
 github.com/pyscape/utter; with a checkout beside this one at `../utter`
 the `[patch]` section in `Cargo.toml` builds against it instead. The wheel
 has no runtime dependencies.
+
+## Release
+
+GitHub Actions builds wheels for Linux x86_64 and aarch64 (manylinux
+2_28), Windows x64, and macOS x86_64 and arm64 on every push, and on a
+`v*` tag attaches them to a GitHub release and publishes to PyPI through
+trusted publishing. Publishing works once the PyPI project names this
+repository's `wheels.yml` workflow and the `pypi` environment as a
+trusted publisher; no token lives in the repository.
