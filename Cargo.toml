@@ -17,3 +17,8 @@ utter = "0.0.1"
 
 [profile.release]
 opt-level = 3
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Backticks in docs only where the bare form breaks, so the lint that demands them is off.
+doc_markdown = "allow"
