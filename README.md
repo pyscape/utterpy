@@ -40,12 +40,12 @@ maturin develop --release        # into the venv
 maturin build --release          # a wheel under target/wheels
 ```
 
-The core is fetched from the pinned revision of
-github.com/pyscape/utter. To build against a checkout beside this one
-instead, put this in `.cargo/config.toml` (ignored by git):
+The core is the utter crate from crates.io at the version Cargo.toml
+names. To build against a checkout beside this one instead, put this
+in `.cargo/config.toml` (ignored by git):
 
 ```toml
-[patch."https://github.com/pyscape/utter.git"]
+[patch.crates-io]
 utter = { path = "../utter" }
 ```
 
