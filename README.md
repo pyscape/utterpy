@@ -24,7 +24,9 @@ it: `partial_alternatives` (distinct readings alive in the beam, with
 `confidence` as the negated cost), `partial_result` entries with
 `start_sample`, `end_sample`, `energy_dbfs` and `stable_ms`, `[sil]` as
 the reading when the best path carries no word and sits on silence and
-`[speech]` when it has entered a word's phones, and an optional
+`[speech]` when it has entered a word's phones, `endpoint` on a final
+naming the rule that closed it and `stable_ms` on each final word for
+the hold it had in the partial, and an optional
 `unknown_cost` argument to the recognizer that admits the model's
 unknown-word symbol. `DecodedSample()` gives the position, in samples fed,
 of the last decoded frame.
