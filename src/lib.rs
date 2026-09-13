@@ -85,7 +85,10 @@ impl PyRecognizer {
     /// further word is within that many nats of it.
     #[pyo3(signature = (trailing_ms, extending_veto_nats = None))]
     fn SetEndpointBound(&mut self, trailing_ms: Option<f32>, extending_veto_nats: Option<f32>) {
-        self.inner.set_endpoint_bound(trailing_ms.filter(|&m| m > 0.0), extending_veto_nats.filter(|&n| n > 0.0));
+        self.inner.set_endpoint_bound(
+            trailing_ms.filter(|&m| m > 0.0),
+            extending_veto_nats.filter(|&n| n > 0.0),
+        );
     }
     fn SetPartialAlternatives(&mut self, n: usize) {
         self.inner.set_alternatives(n);
@@ -135,7 +138,7 @@ impl PyRecognizer {
 fn SetLogLevel(_level: i32) {}
 
 #[pymodule]
-fn utterpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _utterpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyModel>()?;
     m.add_class::<PyRecognizer>()?;
     m.add("Recognizer", m.getattr("KaldiRecognizer")?)?;

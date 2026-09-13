@@ -51,6 +51,9 @@ utter = { path = "../utter" }
 
 The wheel has no runtime dependencies.
 
+The wheel carries py.typed and a stub for the module, so a type checker
+sees the API without a separate stubs package.
+
 ## Release
 
 GitHub Actions builds wheels for Linux x86_64 and aarch64 (manylinux

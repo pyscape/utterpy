@@ -13,8 +13,17 @@ classifiers = [
   "Programming Language :: Rust",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Multimedia :: Sound/Audio :: Speech",
+  "Typing :: Typed",
 ]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "utterpy"
+# The compiled module sits inside the package so py.typed and the stub ship beside it.
+module-name = "utterpy._utterpy"
+python-source = "python"
+
+[tool.mypy]
+# The floor in requires-python, not whichever interpreter CI happens to run mypy on.
+python_version = "3.9"
+# AcceptWaveform downcasts to bytes, so the stub's bytes must not absorb memoryview.
+strict_bytes = true
