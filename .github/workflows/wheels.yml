@@ -27,6 +27,8 @@ jobs:
           rs=$(python3 -c 'import tomllib;print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
           echo "tag=$tag pyproject=$py Cargo=$rs"
           [ "$tag" = "$py" ] && [ "$tag" = "$rs" ]
+      - name: The release notes for this tag exist
+        run: test -s "docs/release-notes/${GITHUB_REF_NAME}.md"
 
   lint:
     runs-on: ubuntu-latest
@@ -228,6 +230,7 @@ jobs:
       contents: write
       attestations: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           path: dist
@@ -250,5 +253,9 @@ jobs:
           files: |
             dist/*
             utterpy-${{ github.ref_name }}.sigstore.json
+          body_path: docs/release-notes/${{ github.ref_name }}.md
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
+        with:
+          # A rerun of a tag whose wheels PyPI already holds refreshes the GitHub release only.
+          skip-existing: true
