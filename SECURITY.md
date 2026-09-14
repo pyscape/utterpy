@@ -15,9 +15,20 @@ reaches the crate unchecked, a reference the module holds past the
 object that owned it, or a wheel whose contents differ from what the
 release workflow built.
 
-## Verifying a wheel
+## Verifying a release
 
-Every wheel carries a build-provenance attestation, and each release
+The release tag is signed with the maintainer's SSH key, the one
+GitHub shows as verified on the tag. To check it locally, put that
+public key in an allowed-signers file and name the file to git:
+
+```bash
+echo "jared@creating.agency $(curl -sf https://github.com/pyscape.keys | grep ssh-ed25519)" >> ~/.ssh/allowed_signers
+git config gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+git tag -v vX.Y.Z
+```
+
+Every wheel carries a build-provenance attestation binding it to this
+repository, the workflow and the tagged commit, and each release
 attaches its Sigstore bundle:
 
 ```bash
