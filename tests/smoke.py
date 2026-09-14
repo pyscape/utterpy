@@ -16,6 +16,7 @@ for name in [
     "SetPartialAlternatives",
     "SetMaxAlternatives",
     "SetEndpointBound",
+    "SetEndpointFloorMargin",
     "AcceptWaveform",
     "PartialResult",
     "Result",

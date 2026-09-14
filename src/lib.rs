@@ -90,6 +90,10 @@ impl PyRecognizer {
             extending_veto_nats.filter(|&n| n > 0.0),
         );
     }
+    fn SetEndpointFloorMargin(&mut self, margin_db: Option<f32>) {
+        self.inner
+            .set_endpoint_floor_margin(margin_db.filter(|&m| m > 0.0));
+    }
     fn SetPartialAlternatives(&mut self, n: usize) {
         self.inner.set_alternatives(n);
     }

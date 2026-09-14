@@ -42,6 +42,9 @@ class KaldiRecognizer:
     ) -> None:
         """A host endpoint bound: a final once the trailing silence reaches trailing_ms."""
 
+    def SetEndpointFloorMargin(self, margin_db: float | None) -> None:
+        """A margin in dB over the floor within which the bound reads a wordless path as silence."""
+
     def SetPartialAlternatives(self, n: int) -> None: ...
     def SetMaxAlternatives(self, n: int) -> None: ...
     def AcceptWaveform(self, data: bytes) -> bool:
