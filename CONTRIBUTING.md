@@ -35,6 +35,14 @@ is removed; a rule that lives elsewhere is cited, not repeated.
 
 ## Releasing
 
+`scripts/release.sh --check` says whether a release can be cut from
+the checkout: on main and level with origin, a clean tree, the version
+in pyproject.toml agreeing with Cargo.toml and the pinned crate, its
+`docs/release-notes/vX.Y.Z.md` and CHANGELOG heading, no Unreleased
+section, no such tag yet, and no such version on PyPI. Without
+`--check` it signs and verifies the tag, pushes it, watches the
+workflow, and confirms the ten assets and the version on PyPI.
+
 A release is a signed tag on `main`, numbered for the utter crate it
 carries. Before the tag, one pull request moves the pin and `version`
 in both pyproject.toml and Cargo.toml to the crate's number, moves the
