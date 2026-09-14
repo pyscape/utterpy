@@ -47,7 +47,7 @@ mypy==1.18.2 \
     --hash=sha256:d924eef3795cc89fecf6bedc6ed32b33ac13e8321344f6ddbf8ee89f706c05cb \
     --hash=sha256:ed4482847168439651d3feee5833ccedbf6657e964572706a2adb1f7fa4dfe2e \
     --hash=sha256:f9e171c465ad3901dc652643ee4bffa8e9fef4d7d0eece23b428908c77a76a66
-    # via -r .github/requirements/lint.in
+    # via -r lint.in
 mypy-extensions==1.1.0 \
     --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505 \
     --hash=sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558
@@ -70,10 +70,10 @@ pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
     --hash=sha256:610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c
     # via pytest
-pytest==8.4.2 \
-    --hash=sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01 \
-    --hash=sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79
-    # via -r .github/requirements/lint.in
+pytest==9.1.1 \
+    --hash=sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313 \
+    --hash=sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c
+    # via -r lint.in
 pyyaml==6.0.3 \
     --hash=sha256:00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c \
     --hash=sha256:0150219816b6a1fa26fb4699fb7daa9caf09eb1999f3b70fb6e786805e80375a \
@@ -168,7 +168,7 @@ ruff==0.16.7 \
     --hash=sha256:ce05b62b770a8217c4646a9c4139fca00efe8fe5d71f87df2b243ff20d4584d1 \
     --hash=sha256:e6651f97a342d8b35d54d8991544ca22169b86dc54111cb604666940c431b750 \
     --hash=sha256:ef140c6eb935fa9a84c9c607dfb2cb1b85843c192e79265b0c54f35f557ea8e5
-    # via -r .github/requirements/lint.in
+    # via -r lint.in
 typing-extensions==4.16.0 \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
     --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
@@ -176,4 +176,4 @@ typing-extensions==4.16.0 \
 yamllint==1.38.0 \
     --hash=sha256:09e5f29531daab93366bb061e76019d5e91691ef0a40328f04c927387d1d364d \
     --hash=sha256:fc394a5b3be980a4062607b8fdddc0843f4fa394152b6da21722f5d59013c220
-    # via -r .github/requirements/lint.in
+    # via -r lint.in
