@@ -33,6 +33,30 @@ list, and a test against the model.
 Comment only what the code cannot say. A comment that restates the code
 is removed; a rule that lives elsewhere is cited, not repeated.
 
+## Releasing
+
+A release is a signed tag on `main`. Before the tag, one pull request
+bumps `version` in both pyproject.toml and Cargo.toml, moves the
+changelog's Unreleased section under the new number, and adds
+`docs/release-notes/vX.Y.Z.md`, the release body. The version job on
+the tag checks all four and that the tag's signature is one GitHub
+verifies for the maintainer:
+
+```sh
+git tag -s vX.Y.Z -m "utterpy X.Y.Z"
+git push origin vX.Y.Z
+```
+
+The workflow then builds every wheel and the sdist, attests them,
+attaches them and the Sigstore bundle to a GitHub release, and
+publishes to PyPI through trusted publishing from the `pypi`
+environment, which deploys from `v*` tags only. Before the first
+release, PyPI needs a pending publisher for the project name naming
+this repository, `wheels.yml` and the `pypi` environment; the first
+publish then creates the project. No token lives in the repository.
+A tag that reaches PyPI cannot be moved or deleted; a fix is the next
+version.
+
 ## Certifying origin
 
 Contributions are certified under the Developer Certificate of Origin,
