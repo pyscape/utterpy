@@ -90,6 +90,8 @@ impl PyRecognizer {
             extending_veto_nats.filter(|&n| n > 0.0),
         );
     }
+    /// A margin in dB over the reported floor within which the bound reads a wordless path as
+    /// silence; such a final names `floor` as its endpoint. 0 or None removes it.
     fn SetEndpointFloorMargin(&mut self, margin_db: Option<f32>) {
         self.inner
             .set_endpoint_floor_margin(margin_db.filter(|&m| m > 0.0));
@@ -151,5 +153,11 @@ fn _utterpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Which runtime decoded, rather than which checkout a benchmark script was read from: the
     // binding is a compiled artifact and can be any age.
     m.add("UTTER_REVISION", utter::REVISION)?;
+    // SAFETY: utter_version returns a static NUL-terminated string.
+    let version = unsafe { std::ffi::CStr::from_ptr(utter::capi::utter_version()) };
+    m.add(
+        "UTTER_VERSION",
+        version.to_str().expect("utter's version is ASCII"),
+    )?;
     Ok(())
 }

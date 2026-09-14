@@ -2,6 +2,7 @@ from typing import Any, final
 
 __all__ = [
     "UTTER_REVISION",
+    "UTTER_VERSION",
     "KaldiRecognizer",
     "Model",
     "Recognizer",
@@ -11,6 +12,7 @@ __all__ = [
 
 __version__: str
 UTTER_REVISION: str
+UTTER_VERSION: str
 
 @final
 class Model:
@@ -43,7 +45,10 @@ class KaldiRecognizer:
         """A host endpoint bound: a final once the trailing silence reaches trailing_ms."""
 
     def SetEndpointFloorMargin(self, margin_db: float | None) -> None:
-        """A margin in dB over the floor within which the bound reads a wordless path as silence."""
+        """A margin in dB over the floor within which the bound reads a wordless path as silence.
+
+        Such a final names "floor" as its endpoint. 0 or None removes the margin.
+        """
 
     def SetPartialAlternatives(self, n: int) -> None: ...
     def SetMaxAlternatives(self, n: int) -> None: ...
