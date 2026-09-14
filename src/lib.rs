@@ -91,7 +91,8 @@ impl PyRecognizer {
         );
     }
     /// A margin in dB over the reported floor within which the bound reads a wordless path as
-    /// silence; such a final names `floor` as its endpoint. 0 or None removes it.
+    /// silence, over a span at least as long as the bound; such a final names `floor` as its
+    /// endpoint. 0 or None removes it.
     fn SetEndpointFloorMargin(&mut self, margin_db: Option<f32>) {
         self.inner
             .set_endpoint_floor_margin(margin_db.filter(|&m| m > 0.0));
