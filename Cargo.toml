@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.29", features = ["extension-module", "abi3-py39"] }
-utter = "0.0.2"
+utter = "0.0.3"
 
 
 [profile.release]

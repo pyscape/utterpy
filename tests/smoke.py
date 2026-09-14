@@ -16,6 +16,7 @@ for name in [
     "SetPartialAlternatives",
     "SetMaxAlternatives",
     "SetEndpointBound",
+    "SetEndpointFloorMargin",
     "AcceptWaveform",
     "PartialResult",
     "Result",
@@ -25,6 +26,7 @@ for name in [
 ]:
     assert hasattr(utterpy.KaldiRecognizer, name), name
 assert hasattr(utterpy.Model, "FindWord")
+assert utterpy.UTTER_VERSION.count(".") == 2 and utterpy.UTTER_REVISION
 utterpy.SetLogLevel(-1)
 try:
     utterpy.Model("/nonexistent")

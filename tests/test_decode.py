@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import struct
 import wave
 from collections.abc import Iterator
@@ -83,7 +84,7 @@ def test_final_reads_the_word(model: utterpy.Model, word: str) -> None:
     assert entry["word"] == word
     assert entry["stable_ms"] > 0
     assert 0 <= entry["start"] < entry["end"] <= 2.0
-    assert isinstance(entry["energy_dbfs"], float)
+    assert isinstance(entry["energy_dbfs"], float) and entry["energy_dbfs"] < 0
 
 
 def test_word_shows_in_a_partial_before_the_final(model: utterpy.Model) -> None:
@@ -109,6 +110,35 @@ def test_endpoint_bound_fires_and_names_itself(model: utterpy.Model) -> None:
     (final,) = worded_finals(stream(rec, clip("stop") + SECOND_OF_SILENCE * 2))
     assert final["text"] == "stop"
     assert isinstance(final["endpoint"], str)
+
+
+def test_digital_silence_has_no_energy_and_no_floor(model: utterpy.Model) -> None:
+    rec = recognizer(model)
+    readings = stream(rec, SECOND_OF_SILENCE * 2)
+    assert all("floor_dbfs" not in r for r in readings)
+    entries = [e for r in readings for e in r.get("partial_result", r.get("result", []))]
+    assert entries and all(e["energy_dbfs"] is None for e in entries)
+
+
+def test_floor_margin_lets_the_bound_close_over_room_noise(model: utterpy.Model) -> None:
+    # Digital zeros have no floor to measure against, so the room is low white noise. Without
+    # the margin the model's rule2 closes the word; within it the bound does, and sooner.
+    rng = random.Random(1)
+    noise = struct.pack("<48000h", *[rng.randint(-30, 30) for _ in range(48000)])
+
+    def closing(margin: float | None) -> tuple[str, int]:
+        rec = recognizer(model)
+        rec.SetEndpointBound(300.0, 8.0)
+        rec.SetEndpointFloorMargin(margin)
+        readings = stream(rec, clip("stop") + noise)
+        (final,) = worded_finals(readings)
+        assert final["text"] == "stop"
+        return final["endpoint"], readings.index(final)
+
+    unset, margin = closing(None), closing(6.0)
+    assert unset[0] == "rule2"
+    assert margin[0] == "bound"
+    assert margin[1] <= unset[1]
 
 
 def test_decoded_sample_tracks_the_audio_fed(model: utterpy.Model) -> None:

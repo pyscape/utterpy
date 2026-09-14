@@ -2,6 +2,7 @@
 
 from ._utterpy import (
     UTTER_REVISION,
+    UTTER_VERSION,
     KaldiRecognizer,
     Model,
     Recognizer,
@@ -11,6 +12,7 @@ from ._utterpy import (
 
 __all__ = [
     "UTTER_REVISION",
+    "UTTER_VERSION",
     "KaldiRecognizer",
     "Model",
     "Recognizer",

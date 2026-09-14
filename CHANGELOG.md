@@ -13,4 +13,7 @@ bound and its floor margin. Wheels for Linux x86_64 and aarch64
 x86_64 and arm64, on Python 3.9 and later through the stable ABI, with
 a stub and py.typed beside the module. Every wheel carries a
 build-provenance attestation, and the release attaches its Sigstore
-bundle.
+bundle. `UTTER_VERSION` and `UTTER_REVISION` name the crate the wheel
+was built from. A word's `energy_dbfs` is `null` under digital silence
+and `floor_dbfs` is absent while the floor is digital silence, as
+utter 0.0.3 reports them.

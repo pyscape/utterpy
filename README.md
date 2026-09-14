@@ -87,8 +87,9 @@ it: `partial_alternatives` (distinct readings alive in the beam, with
 `start_sample`, `end_sample`, `energy_dbfs` and `stable_ms`, `[sil]` as
 the reading when the best path carries no word and sits on silence and
 `[speech]` when it has entered a word's phones, `endpoint` on a final
-naming the rule that closed it and `stable_ms` on each final word for
-the hold it had in the partial, and an optional
+naming what closed it (`rule1` to `rule5`, `bound`, `floor`, `flush`
+or `host`), `stable_ms` on each final word for the hold it had in the
+partial, `floor_dbfs` for the room's noise floor, and an optional
 `unknown_cost` argument to the recognizer that admits the model's
 unknown-word symbol. `DecodedSample()` gives the position, in samples fed,
 of the last decoded frame.
@@ -105,6 +106,7 @@ rec.SetPartialWords(True)       # word entries on partials, with [sil]/[speech]
 rec.SetPartialAlternatives(4)   # four distinct readings per partial
 rec.SetMaxAlternatives(4)       # n-best finals
 rec.SetEndpointBound(300, 8)    # host bound with veto; (ms, 0) bare, (0) off
+rec.SetEndpointFloorMargin(6)   # the bound reads a wordless path within 6 dB of the floor as silence
 ```
 
 Feed 40 ms blocks, 1280 bytes at 16 kHz mono int16. Two clocks: a
@@ -141,9 +143,20 @@ Host rules that have held up, each keyed off one field:
   can be a real rescored reading.
 - Keep the bound on with the veto. Shorter bounds are fine with it
   and cut phrases into pieces without it.
+- On a quiet room, set a floor margin. The model reads mic hiss as a
+  word's first phone, no silence rule fires, and the 20 s cap forces
+  a word. With `SetEndpointFloorMargin`, a wordless path within the
+  margin of `floor_dbfs` counts as trailing silence and the bound
+  closes it with `"endpoint": "floor"`, an empty `result` and the text
+  `[sil]` or `[speech]`. Off by default; output is unchanged when unset
+  ([TD-12](https://github.com/pyscape/utter/blob/main/docs/td/0012-the-bound-reads-a-wordless-path-at-the-floor-as-silence.md)).
 - Gate on `energy_dbfs` at least 8 dB above `floor_dbfs` only after
   scoring it on your replays: it removes about half the worded finals
-  on room silence and costs real words near the floor.
+  on room silence and costs real words near the floor. `energy_dbfs`
+  is `null` when there is no signal under the word, and `floor_dbfs`
+  is absent while the quietest windows of the last ten seconds are
+  digital silence, so a gate is not handed a number every word sits
+  above.
 
 ## Build
 
