@@ -8,6 +8,12 @@ updates:
     directory: /.github/requirements
     schedule:
       interval: weekly
+    ignore:
+      # pytest 9 and mypy 2 dropped Python 3.9, the floor requires-python declares.
+      - dependency-name: pytest
+        update-types: ["version-update:semver-major"]
+      - dependency-name: mypy
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: cargo
     directory: /
     schedule:
