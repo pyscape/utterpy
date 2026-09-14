@@ -35,12 +35,15 @@ is removed; a rule that lives elsewhere is cited, not repeated.
 
 ## Releasing
 
-A release is a signed tag on `main`. Before the tag, one pull request
-bumps `version` in both pyproject.toml and Cargo.toml, moves the
-changelog's Unreleased section under the new number, and adds
-`docs/release-notes/vX.Y.Z.md`, the release body. The version job on
-the tag checks all four and that the tag's signature is one GitHub
-verifies for the maintainer:
+A release is a signed tag on `main`, numbered for the utter crate it
+carries. Before the tag, one pull request moves the pin and `version`
+in both pyproject.toml and Cargo.toml to the crate's number, moves the
+changelog's Unreleased section under it, and adds
+`docs/release-notes/vX.Y.Z.md`, the release body. A fix to the binding
+alone, with the crate unchanged, is a post-release: `vX.Y.Z.postN` as
+the tag and the pyproject version, Cargo.toml still at `X.Y.Z`. The
+version job on the tag checks all of that and that the tag's signature
+is one GitHub verifies for the maintainer:
 
 ```sh
 git tag -s vX.Y.Z -m "utterpy X.Y.Z"
