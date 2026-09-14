@@ -18,81 +18,105 @@ jobs:
   version:
     # The tag must name the version both manifests carry, or PyPI gets a release under the wrong number.
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - run: |
           tag="${GITHUB_REF_NAME#v}"
           py=$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
           rs=$(python3 -c 'import tomllib;print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
           echo "tag=$tag pyproject=$py Cargo=$rs"
           [ "$tag" = "$py" ] && [ "$tag" = "$rs" ]
+      - name: The release notes for this tag exist
+        run: test -s "docs/release-notes/${GITHUB_REF_NAME}.md"
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          components: rustfmt, clippy
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: The toolchain rust-toolchain.toml pins, with its components
+        run: rustup toolchain install
+      - name: The crate builds on the rust-version the manifest promises
+        run: |
+          msrv=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].rust_version')
+          rustup toolchain install "$msrv" --profile minimal
+          cargo "+$msrv" check --all-targets
       - run: cargo fmt --check
-      - run: cargo clippy --release -- -D warnings
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - run: cargo clippy --release --all-targets -- -D warnings
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25  # v2.1.1
+      - name: No build artefacts are tracked
+        run: |
+          ! git ls-files | grep -E '(^|/)__pycache__/|\.pyc$|(^|/)target/|(^|/)dist/'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
-      - run: pip install ruff && ruff check python tests && ruff format --check python tests
-      - uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e # v20.0.0
-      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+      - run: pip install --require-hashes -r .github/requirements/lint.txt
+      - run: ruff check python tests && ruff format --check python tests
       - name: Install the module so the type checks resolve it
         run: pip install .
-      - run: pip install mypy==1.18.2 "pytest<9" && mypy --strict tests
+      - run: mypy --strict tests
       - run: python -m mypy.stubtest utterpy
+      - uses: crate-ci/typos@d43b6c087ac471e2ea7b8af622ff15f05c0c365b  # v1.50.1
+      - run: yamllint --strict .
+      - run: npx --yes markdownlint-cli2@0.23.2
+      - run: |
+          npx --yes @taplo/cli@0.7.0 lint '**/*.toml'
+          npx --yes @taplo/cli@0.7.0 fmt --check '**/*.toml'
+      - name: Workflows lint, their shell through shellcheck
+        run: |
+          curl -sfL -o actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz" \
+            | sha256sum --check
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint -color
 
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.target == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     strategy:
+      fail-fast: false
       matrix:
         target: [x86_64, aarch64]
         libc: [manylinux, musllinux]
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
       - name: Build wheel
-        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.9.0
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.9.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist
           manylinux: ${{ matrix.libc == 'musllinux' && 'musllinux_1_2' || '2_28' }}
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Smoke test
-        if: matrix.target == 'x86_64' && matrix.libc == 'manylinux'
+        if: matrix.libc == 'manylinux'
         run: |
           python -m pip install --no-index --find-links dist utterpy
           python tests/smoke.py
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: wheels-linux-${{ matrix.target }}-${{ matrix.libc }}
           path: dist
 
   test:
     needs: linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           name: wheels-linux-x86_64-manylinux
           path: dist
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         id: model
         with:
           path: models
@@ -109,13 +133,12 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
-          architecture: x64
       - name: Build wheel
-        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.9.0
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.9.0
         with:
           target: x64
           args: --release --out dist
@@ -125,9 +148,32 @@ jobs:
         run: |
           python -m pip install --no-index --find-links dist utterpy
           python tests/smoke.py
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: wheels-windows-x64
+          path: dist
+
+  windows-arm:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Build wheel
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.9.0
+        with:
+          target: aarch64
+          args: --release --out dist
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Smoke test
+        shell: bash
+        run: |
+          python -m pip install --no-index --find-links dist utterpy
+          python tests/smoke.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: wheels-windows-aarch64
           path: dist
 
   macos:
@@ -140,12 +186,12 @@ jobs:
           - runner: macos-14
             target: aarch64
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
       - name: Build wheel
-        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.9.0
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.9.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist
@@ -154,20 +200,20 @@ jobs:
         run: |
           python -m pip install --no-index --find-links dist utterpy
           python tests/smoke.py
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: wheels-macos-${{ matrix.target }}
           path: dist
 
   sdist:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.9.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.9.0
         with:
           command: sdist
           args: --out dist
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: sdist
           path: dist
@@ -176,20 +222,40 @@ jobs:
     # Runs on a version tag only. Publishing uses PyPI trusted publishing: the project on PyPI
     # must list this repository and workflow as a publisher; no token is stored here.
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [version, lint, test, linux, windows, macos, sdist]
-    runs-on: ubuntu-22.04
+    needs: [version, lint, test, linux, windows, windows-arm, macos, sdist]
+    runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write
       contents: write
+      attestations: write
     steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
           path: dist
           merge-multiple: true
-      - name: GitHub release with the wheels attached
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+      - name: Provenance for every wheel and the sdist, verifiable with `gh attestation verify`
+        id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
         with:
-          files: dist/*
+          subject-path: dist/*
+      # The bundle rides with the release so a consumer verifies offline with --bundle and
+      # Scorecard's Signed-Releases sees the release as signed. One attestation names every
+      # file; the action would write one bundle per line if it made several.
+      - name: The Sigstore bundle beside the wheels
+        run: |
+          test "$(jq -c . "${{ steps.attest.outputs.bundle-path }}" | wc -l)" = 1
+          jq . "${{ steps.attest.outputs.bundle-path }}" > "utterpy-${GITHUB_REF_NAME}.sigstore.json"
+      - name: GitHub release with the wheels attached
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
+        with:
+          files: |
+            dist/*
+            utterpy-${{ github.ref_name }}.sigstore.json
+          body_path: docs/release-notes/${{ github.ref_name }}.md
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
+        with:
+          # A rerun of a tag whose wheels PyPI already holds refreshes the GitHub release only.
+          skip-existing: true

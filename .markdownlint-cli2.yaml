@@ -3,7 +3,10 @@ globs:
 ignores:
   - target
   - .venv
+  - node_modules
 config:
-  MD013:
-    code_blocks: false
-    tables: false
+  # release notes are one paragraph per line, as utter writes them
+  MD013: false
+  # a release-notes file is a release body; the release title is its heading
+  MD041: false
+  MD060: false
