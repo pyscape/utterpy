@@ -8,8 +8,9 @@
 [![Scorecard](https://api.scorecard.dev/projects/github.com/pyscape/utterpy/badge)](https://scorecard.dev/viewer/?uri=github.com/pyscape/utterpy)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Python bindings for utter, the zero-dependency pure-Rust streaming
-speech decoder for Vosk (Kaldi nnet3) models. Drop-in for the vosk
+Python bindings for [utter](https://github.com/pyscape/utter), the
+zero-dependency pure-Rust streaming speech decoder for Vosk (Kaldi
+nnet3) models. Drop-in for the vosk
 wheel's API: feed 16 kHz audio, read the partial after every block, the
 live n-best from the beam, word times, endpoints. No C toolchain, no
 Docker, no cloud.
