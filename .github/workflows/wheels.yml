@@ -16,17 +16,22 @@ concurrency:
 
 jobs:
   version:
-    # The tag must name the version both manifests carry, or PyPI gets a release under the wrong number.
+    # The wheel's version is the utter crate's; a binding-only fix is a post-release of it. The
+    # tag is the pyproject version, and its base is both the Cargo version and the pinned crate's.
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - run: rustup toolchain install
       - run: |
           tag="${GITHUB_REF_NAME#v}"
+          base="${tag%.post*}"
           py=$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
           rs=$(python3 -c 'import tomllib;print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
-          echo "tag=$tag pyproject=$py Cargo=$rs"
-          [ "$tag" = "$py" ] && [ "$tag" = "$rs" ]
+          core=$(cargo metadata --format-version 1 --locked \
+            | jq -r '.packages[] | select(.name == "utter" and .source != null) | .version')
+          echo "tag=$tag pyproject=$py Cargo=$rs utter=$core"
+          [ "$tag" = "$py" ] && [ "$base" = "$rs" ] && [ "$base" = "$core" ]
       - name: The release notes for this tag exist, and the changelog has its section
         run: |
           test -s "docs/release-notes/${GITHUB_REF_NAME}.md"

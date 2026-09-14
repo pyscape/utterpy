@@ -4,9 +4,11 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
-## Unreleased
+## 0.0.3
 
-First release: a Python binding for the utter crate with the vosk
+First release, numbered for the utter crate it carries: the wheel's
+version is the crate's, and a binding-only fix is a post-release of it.
+The binding: a Python binding for the utter crate with the vosk
 wheel's surface, `Model` and `KaldiRecognizer`, plus the host endpoint
 bound and its floor margin. Wheels for Linux x86_64 and aarch64
 (manylinux 2_28 and musllinux 1.2), Windows x64 and arm64, and macOS
