@@ -4,6 +4,16 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
+## 0.0.4
+
+### Fixed
+
+- The floor margin reads no span shorter than the bound, so a quiet
+  word's first frames after a pause no longer waive the veto or count
+  as silence, and a two-word command is not cut in two. From utter
+  0.0.4; the binding is unchanged, and with the margin unset the
+  output is identical to 0.0.3.
+
 ## 0.0.3
 
 First release, numbered for the utter crate it carries: the wheel's

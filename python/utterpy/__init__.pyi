@@ -47,7 +47,8 @@ class KaldiRecognizer:
     def SetEndpointFloorMargin(self, margin_db: float | None) -> None:
         """A margin in dB over the floor within which the bound reads a wordless path as silence.
 
-        Such a final names "floor" as its endpoint. 0 or None removes the margin.
+        Only a span at least as long as the bound is read that way, so a quiet word's first
+        frames are not. Such a final names "floor" as its endpoint. 0 or None removes the margin.
         """
 
     def SetPartialAlternatives(self, n: int) -> None: ...

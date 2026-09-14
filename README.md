@@ -146,9 +146,11 @@ Host rules that have held up, each keyed off one field:
 - On a quiet room, set a floor margin. The model reads mic hiss as a
   word's first phone, no silence rule fires, and the 20 s cap forces
   a word. With `SetEndpointFloorMargin`, a wordless path within the
-  margin of `floor_dbfs` counts as trailing silence and the bound
-  closes it with `"endpoint": "floor"`, an empty `result` and the text
-  `[sil]` or `[speech]`. Off by default; output is unchanged when unset
+  margin of `floor_dbfs`, and at least as long as the bound, counts as
+  trailing silence and the bound closes it with `"endpoint": "floor"`,
+  an empty `result` and the text `[sil]` or `[speech]`. A quiet word's
+  first frames after a pause are shorter than that and are left alone.
+  Off by default; output is unchanged when unset
   ([TD-12](https://github.com/pyscape/utter/blob/main/docs/td/0012-the-bound-reads-a-wordless-path-at-the-floor-as-silence.md)).
 - Gate on `energy_dbfs` at least 8 dB above `floor_dbfs` only after
   scoring it on your replays: it removes about half the worded finals

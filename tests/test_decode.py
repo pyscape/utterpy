@@ -120,9 +120,10 @@ def test_digital_silence_has_no_energy_and_no_floor(model: utterpy.Model) -> Non
     assert entries and all(e["energy_dbfs"] is None for e in entries)
 
 
-def test_floor_margin_lets_the_bound_close_over_room_noise(model: utterpy.Model) -> None:
-    # Digital zeros have no floor to measure against, so the room is low white noise. Without
-    # the margin the model's rule2 closes the word; within it the bound does, and sooner.
+def test_floor_margin_does_not_cut_a_word_short(model: utterpy.Model) -> None:
+    # Digital zeros have no floor to measure against, so the room is low white noise. The
+    # wordless span right after the word is shorter than the bound, so the margin must not read
+    # it as silence: utter 0.0.3 did, closing the word early, and 0.0.4 does not.
     rng = random.Random(1)
     noise = struct.pack("<48000h", *[rng.randint(-30, 30) for _ in range(48000)])
 
@@ -135,10 +136,7 @@ def test_floor_margin_lets_the_bound_close_over_room_noise(model: utterpy.Model)
         assert final["text"] == "stop"
         return final["endpoint"], readings.index(final)
 
-    unset, margin = closing(None), closing(6.0)
-    assert unset[0] == "rule2"
-    assert margin[0] == "bound"
-    assert margin[1] <= unset[1]
+    assert closing(6.0) == closing(None)
 
 
 def test_decoded_sample_tracks_the_audio_fed(model: utterpy.Model) -> None:
