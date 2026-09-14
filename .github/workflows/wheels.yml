@@ -27,8 +27,17 @@ jobs:
           rs=$(python3 -c 'import tomllib;print(tomllib.load(open("Cargo.toml","rb"))["package"]["version"])')
           echo "tag=$tag pyproject=$py Cargo=$rs"
           [ "$tag" = "$py" ] && [ "$tag" = "$rs" ]
-      - name: The release notes for this tag exist
-        run: test -s "docs/release-notes/${GITHUB_REF_NAME}.md"
+      - name: The release notes for this tag exist, and the changelog has its section
+        run: |
+          test -s "docs/release-notes/${GITHUB_REF_NAME}.md"
+          grep -qx "## ${GITHUB_REF_NAME#v}" CHANGELOG.md
+      - name: The tag is signed by a key GitHub knows for the maintainer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${GITHUB_REF_NAME}" --jq .object.sha)
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/$sha" --jq '.verification | "\(.verified) \(.reason)"' \
+            | tee /dev/stderr | grep -q '^true '
 
   lint:
     runs-on: ubuntu-latest
@@ -213,6 +222,17 @@ jobs:
         with:
           command: sdist
           args: --out dist
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: The sdist carries what PyPI checks and what a build from it needs
+        run: |
+          pip install --require-hashes -r .github/requirements/release.txt
+          twine check --strict dist/*
+          rustup toolchain install
+          python -m venv from-sdist
+          from-sdist/bin/pip install dist/*.tar.gz
+          from-sdist/bin/python tests/smoke.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: sdist

@@ -27,6 +27,20 @@ features = ["pyo3/extension-module"]
 # The compiled module sits inside the package so py.typed and the stub ship beside it.
 module-name = "utterpy._utterpy"
 python-source = "python"
+# The sdist is what builds the wheel, not the repository's tooling.
+exclude = [
+  ".github/**",
+  "docs/**",
+  "tests/**",
+  ".*",
+  "deny.toml",
+  "ruff.toml",
+  "CODE_OF_CONDUCT.md",
+  "CONTRIBUTING.md",
+  "GOVERNANCE.md",
+  "ROADMAP.md",
+  "SECURITY.md",
+]
 
 [tool.mypy]
 # The floor in requires-python, not whichever interpreter CI happens to run mypy on.
