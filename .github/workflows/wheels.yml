@@ -236,7 +236,16 @@ jobs:
           twine check --strict dist/*
           rustup toolchain install
           python -m venv from-sdist
-          from-sdist/bin/pip install dist/*.tar.gz
+          shopt -s nullglob
+          SDISTS=(dist/*.tar.gz)
+          shopt -u nullglob
+          if [ "${#SDISTS[@]}" -ne 1 ]; then
+            echo "Expected exactly one sdist tarball, found ${#SDISTS[@]}" >&2
+            exit 1
+          fi
+          SDIST_PATH="${SDISTS[0]}"
+          SDIST_SHA256="$(sha256sum "$SDIST_PATH" | awk '{print $1}')"
+          from-sdist/bin/pip install --no-deps "file://${PWD}/${SDIST_PATH}#sha256=${SDIST_SHA256}"
           from-sdist/bin/python tests/smoke.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
