@@ -13,8 +13,9 @@ releases.
   or `SetSpkModel`. While one is set, a span of at least 25 pooled
   10 ms frames carries `spk`, `spk_frames`, `spk_start` and `spk_end`
   at the top level and on every word entry. Without one, the output is
-  unchanged. The vectors are not the vosk wheel's, so speakers enrolled
-  with the wheel are enrolled again.
+  unchanged. The vectors are not the vosk wheel's: profiles are rebuilt
+  from the enrolment audio, and the wheel's vectors and thresholds do
+  not carry over.
 - The release attaches the provenance envelope beside the Sigstore
   bundle.
 

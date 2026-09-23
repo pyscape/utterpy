@@ -100,8 +100,9 @@ word entry carries `spk`, the speaker vector of its own span, with
 `spk_frames`, `spk_start` and `spk_end`, once the span holds 25 pooled
 10 ms frames. The wheel puts one vector on a final. These follow Kaldi's
 network but not the wheel's normalisation or frame selection
-([TD-14](https://github.com/pyscape/utter/blob/main/docs/td/0014-every-word-carries-the-speaker-evidence-of-its-own-span.md)), so enrol speakers again rather than reuse the wheel's
-vectors.
+([TD-14](https://github.com/pyscape/utter/blob/main/docs/td/0014-every-word-carries-the-speaker-evidence-of-its-own-span.md)):
+rebuild speaker profiles from your enrolment audio with utterpy, and do
+not reuse vectors or thresholds from the wheel.
 
 ## Configure
 
