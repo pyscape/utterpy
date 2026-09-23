@@ -23,7 +23,7 @@ opening the request, from a venv with `pip install --require-hashes -r
 - `mypy --strict tests` and `python -m mypy.stubtest utterpy`, so the
   stub and the binary agree
 - `pytest tests` against a stock model, with `UTTER_TEST_MODEL` naming
-  its directory; without one `python tests/smoke.py` checks the surface
+  its directory and `UTTER_TEST_SPK_MODEL` a speaker model's; without one `python tests/smoke.py` checks the surface
 - `typos`, `yamllint --strict .`, markdownlint and taplo over the prose
   and configs
 

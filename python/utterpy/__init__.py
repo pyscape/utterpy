@@ -7,6 +7,7 @@ from ._utterpy import (
     Model,
     Recognizer,
     SetLogLevel,
+    SpkModel,
     __version__,
 )
 
@@ -17,5 +18,6 @@ __all__ = [
     "Model",
     "Recognizer",
     "SetLogLevel",
+    "SpkModel",
     "__version__",
 ]

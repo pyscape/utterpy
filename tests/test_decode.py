@@ -33,6 +33,26 @@ def model_path() -> Path | None:
     return None
 
 
+def spk_model_path() -> Path | None:
+    named = os.environ.get("UTTER_TEST_SPK_MODEL")
+    if named:
+        return Path(named)
+    models = Path(__file__).resolve().parent.parent / "models"
+    if models.is_dir():
+        for entry in sorted(models.iterdir()):
+            if (entry / "final.ext.raw").is_file():
+                return entry
+    return None
+
+
+@pytest.fixture(scope="module")
+def spk_model() -> utterpy.SpkModel:
+    path = spk_model_path()
+    if path is None:
+        pytest.skip("no speaker model: set UTTER_TEST_SPK_MODEL or unpack one under models/")
+    return utterpy.SpkModel(str(path))
+
+
 @pytest.fixture(scope="module")
 def model() -> utterpy.Model:
     path = model_path()
@@ -151,3 +171,36 @@ def test_reset_clears_the_reading(model: utterpy.Model) -> None:
     stream(rec, clip("yes"))
     rec.Reset()
     assert json.loads(rec.PartialResult()).get("partial", "") in WORDLESS
+
+
+SPK_KEYS = ("spk", "spk_frames", "spk_start", "spk_end")
+
+
+def test_speaker_evidence_rides_the_final_and_its_words(model: utterpy.Model, spk_model: utterpy.SpkModel) -> None:
+    rec = recognizer(model)
+    rec.SetSpkModel(spk_model)
+    final = worded_finals(stream(rec, clip("yes") + SECOND_OF_SILENCE))[0]
+    assert all(k in final for k in SPK_KEYS)
+    assert len(final["spk"]) == spk_model.dim()
+    assert final["spk_frames"] >= 25
+    assert final["spk_start"] < final["spk_end"]
+    assert all(k in word for word in final["result"] for k in SPK_KEYS)
+
+
+def test_spk_model_in_the_constructor_matches_set_spk_model(model: utterpy.Model, spk_model: utterpy.SpkModel) -> None:
+    pcm = clip("no") + SECOND_OF_SILENCE
+    set_later = recognizer(model)
+    set_later.SetSpkModel(spk_model)
+    built_with = utterpy.KaldiRecognizer(model, 16000, GRAMMAR, spk_model=spk_model)
+    built_with.SetWords(True)
+    built_with.SetPartialWords(True)
+    built_with.SetPartialAlternatives(3)
+    assert stream(set_later, pcm) == stream(built_with, pcm)
+
+
+def test_no_speaker_keys_without_or_after_removing_the_model(model: utterpy.Model, spk_model: utterpy.SpkModel) -> None:
+    rec = recognizer(model)
+    rec.SetSpkModel(spk_model)
+    rec.SetSpkModel(None)
+    for reading in stream(rec, clip("stop") + SECOND_OF_SILENCE):
+        assert not any(k in reading for k in SPK_KEYS)

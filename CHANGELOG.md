@@ -4,6 +4,19 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
+## 0.0.5
+
+### Added
+
+- Speaker evidence, from utter 0.0.5, with the vosk wheel's surface:
+  `SpkModel(path)` with `dim()`, and `KaldiRecognizer(..., spk_model=)`
+  or `SetSpkModel`. While one is set, a span of at least 25 pooled
+  10 ms frames carries `spk`, `spk_frames`, `spk_start` and `spk_end`
+  at the top level and on every word entry. Without one, the output is
+  unchanged.
+- The release attaches the provenance envelope beside the Sigstore
+  bundle.
+
 ## 0.0.4
 
 ### Fixed
