@@ -39,9 +39,10 @@ is removed; a rule that lives elsewhere is cited, not repeated.
 the checkout: on main and level with origin, a clean tree, the version
 in pyproject.toml agreeing with Cargo.toml and the pinned crate, its
 `docs/release-notes/vX.Y.Z.md` and CHANGELOG heading, no Unreleased
-section, no such tag yet, and no such version on PyPI. Without
-`--check` it signs and verifies the tag, pushes it, watches the
-workflow, and confirms the ten assets and the version on PyPI.
+section, no such tag yet, and, while publishing is on, no such version
+on PyPI. Without `--check` it signs and verifies the tag, pushes it,
+watches the workflow, and confirms the eleven assets and, while
+publishing is on, the version on PyPI.
 
 A release is a signed tag on `main`, numbered for the utter crate it
 carries. Before the tag, one pull request moves the pin and `version`
@@ -59,12 +60,13 @@ git push origin vX.Y.Z
 ```
 
 The workflow then builds every wheel and the sdist, attests them,
-attaches them and the Sigstore bundle to a GitHub release, and
-publishes to PyPI through trusted publishing from the `pypi`
-environment, which deploys from `v*` tags only. Before the first
-release, PyPI needs a pending publisher for the project name naming
-this repository, `wheels.yml` and the `pypi` environment; the first
-publish then creates the project. No token lives in the repository.
+attaches them, the Sigstore bundle and its provenance envelope to a
+GitHub release, and publishes to PyPI through trusted publishing from
+the `pypi` environment, which deploys from `v*` tags only. Publishing
+runs only while the repository variable `PYPI_PUBLISH` is `true`.
+Before turning it on, PyPI needs a pending publisher for the project
+name naming this repository, `wheels.yml` and the `pypi` environment;
+the first publish then creates the project. No token lives in the repository.
 A tag that reaches PyPI cannot be moved or deleted; a fix is the next
 version.
 
