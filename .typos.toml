@@ -1,2 +1,6 @@
 [files]
 extend-exclude = ["target/", "models/", ".venv/"]
+
+[default.extend-words]
+# the in-toto attestation format, not a typo for "into"
+intoto = "intoto"
