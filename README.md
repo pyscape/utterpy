@@ -191,6 +191,7 @@ arm64 on every push, runs the tests on Python 3.9 to 3.14, and on a
 `v*` tag attaches them to a GitHub release with the notes under
 `docs/release-notes` as its body and publishes to PyPI through trusted
 publishing. Every wheel carries a build-provenance attestation, and the
-release attaches its Sigstore bundle. Publishing works once the PyPI project names this
+release attaches its Sigstore bundle and provenance envelope. Publishing works once the PyPI project names this
 repository's `wheels.yml` workflow and the `pypi` environment as a
-trusted publisher; no token lives in the repository.
+trusted publisher and the repository variable `PYPI_PUBLISH` is `true`;
+no token lives in the repository.

@@ -245,7 +245,8 @@ jobs:
 
   release:
     # Runs on a version tag only. Publishing uses PyPI trusted publishing: the project on PyPI
-    # must list this repository and workflow as a publisher; no token is stored here.
+    # must list this repository and workflow as a publisher; no token is stored here. Until it
+    # does, the repository variable PYPI_PUBLISH is unset and the tag makes the GitHub release only.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [version, lint, test, linux, windows, windows-arm, macos, sdist]
     runs-on: ubuntu-latest
@@ -266,20 +267,24 @@ jobs:
         with:
           subject-path: dist/*
       # The bundle rides with the release so a consumer verifies offline with --bundle and
-      # Scorecard's Signed-Releases sees the release as signed. One attestation names every
-      # file; the action would write one bundle per line if it made several.
-      - name: The Sigstore bundle beside the wheels
+      # Scorecard's Signed-Releases sees the release as signed; its DSSE envelope, the signed
+      # in-toto statement, rides beside it under the name tooling reads as provenance. One
+      # attestation names every file; the action would write one bundle per line if it made several.
+      - name: The Sigstore bundle and its provenance envelope beside the wheels
         run: |
           test "$(jq -c . "${{ steps.attest.outputs.bundle-path }}" | wc -l)" = 1
           jq . "${{ steps.attest.outputs.bundle-path }}" > "utterpy-${GITHUB_REF_NAME}.sigstore.json"
+          jq -c .dsseEnvelope "${{ steps.attest.outputs.bundle-path }}" > "utterpy-${GITHUB_REF_NAME}.intoto.jsonl"
       - name: GitHub release with the wheels attached
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
         with:
           files: |
             dist/*
             utterpy-${{ github.ref_name }}.sigstore.json
+            utterpy-${{ github.ref_name }}.intoto.jsonl
           body_path: docs/release-notes/${{ github.ref_name }}.md
       - name: Publish to PyPI
+        if: vars.PYPI_PUBLISH == 'true'
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
         with:
           # A rerun of a tag whose wheels PyPI already holds refreshes the GitHub release only.

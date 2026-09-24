@@ -44,9 +44,15 @@ git ls-remote --exit-code --tags origin "$tag" >/dev/null 2>&1 && fail "tag $tag
 ok "tag $tag is free"
 [ "$(git config --get tag.gpgSign)" = true ] || fail "tag.gpgSign is not on; the tag must be signed"
 ok "tags are signed"
-code=$(curl -s -o /dev/null -w '%{http_code}' -A "utterpy release script" "https://pypi.org/pypi/utterpy/$version/json")
-[ "$code" = 404 ] || fail "PyPI answers $code for utterpy $version; expected 404 before publishing"
-ok "PyPI has no $version"
+# The workflow publishes only while this variable is true, so the PyPI checks follow it.
+pypi=$(gh variable get PYPI_PUBLISH 2>/dev/null || true)
+if [ "$pypi" = true ]; then
+    code=$(curl -s -o /dev/null -w '%{http_code}' -A "utterpy release script" "https://pypi.org/pypi/utterpy/$version/json")
+    [ "$code" = 404 ] || fail "PyPI answers $code for utterpy $version; expected 404 before publishing"
+    ok "PyPI has no $version"
+else
+    ok "PYPI_PUBLISH is not true; the release goes to GitHub only"
+fi
 
 if $check_only; then
     printf 'preconditions hold; run without --check to tag\n'
@@ -70,9 +76,15 @@ draft=$(gh release view "$tag" --json isDraft -q '.isDraft')
 assets=$(gh release view "$tag" --json assets -q '.assets[].name')
 n=$(printf '%s\n' "$assets" | grep -c .)
 printf '%s\n' "$assets" | sed 's/^/      /'
-[ "$n" -eq 10 ] || fail "expected 10 assets (eight wheels, the sdist and the Sigstore bundle), found $n"
+[ "$n" -eq 11 ] || fail "expected 11 assets (eight wheels, the sdist, the Sigstore bundle, the provenance envelope), found $n"
 printf '%s\n' "$assets" | grep -q "^utterpy-$tag.sigstore.json\$" || fail "the Sigstore bundle is not among the assets"
-ok "release has ten assets and is published"
+printf '%s\n' "$assets" | grep -q "^utterpy-$tag.intoto.jsonl\$" || fail "the provenance envelope is not among the assets"
+ok "release has eleven assets and is published"
+
+if [ "$pypi" != true ]; then
+    printf 'released %s on GitHub; PyPI publishing is off\n' "$tag"
+    exit 0
+fi
 
 for _ in 1 2 3 4 5 6; do
     code=$(curl -s -o /dev/null -w '%{http_code}' -A "utterpy release script" "https://pypi.org/pypi/utterpy/$version/json")
