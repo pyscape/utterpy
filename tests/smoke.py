@@ -17,6 +17,7 @@ for name in [
     "SetMaxAlternatives",
     "SetEndpointBound",
     "SetEndpointFloorMargin",
+    "SetSpkModel",
     "AcceptWaveform",
     "PartialResult",
     "Result",
@@ -26,6 +27,7 @@ for name in [
 ]:
     assert hasattr(utterpy.KaldiRecognizer, name), name
 assert hasattr(utterpy.Model, "FindWord")
+assert hasattr(utterpy.SpkModel, "dim")
 assert utterpy.UTTER_VERSION.count(".") == 2 and utterpy.UTTER_REVISION
 utterpy.SetLogLevel(-1)
 try:

@@ -7,6 +7,7 @@ __all__ = [
     "Model",
     "Recognizer",
     "SetLogLevel",
+    "SpkModel",
     "__version__",
 ]
 
@@ -21,6 +22,14 @@ class Model:
         """Word id for a word, -1 when the model does not know it (vosk's FindWord)."""
 
 @final
+class SpkModel:
+    """vosk's SpkModel: a speaker model directory (the vosk-model-spk-0.4 layout)."""
+
+    def __new__(cls, path: str) -> SpkModel: ...
+    def dim(self) -> int:
+        """The length of the speaker vector."""
+
+@final
 class KaldiRecognizer:
     """vosk's KaldiRecognizer: a streaming recognizer over one model and one grammar."""
 
@@ -30,8 +39,16 @@ class KaldiRecognizer:
         sample_rate: float,
         grammar: str,
         unknown_cost: float | None = None,
+        spk_model: SpkModel | None = None,
     ) -> KaldiRecognizer:
         """The grammar is a JSON array of strings as vosk takes it."""
+
+    def SetSpkModel(self, spk_model: SpkModel | None) -> None:
+        """vosk's SetSpkModel; None removes it. Audio already fed in the current stream counts.
+
+        While set, a span of at least 25 pooled 10 ms frames carries "spk", "spk_frames",
+        "spk_start" and "spk_end" at the top level and on every word entry.
+        """
 
     def SetWords(self, on: Any) -> None:
         """Any value Python considers truthy, as the vosk wheel accepts."""

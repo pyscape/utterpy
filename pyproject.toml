@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "utterpy"
-version = "0.0.4"
+version = "0.0.5"
 description = "Python bindings for utter, the zero-dependency pure-Rust streaming speech decoder for Vosk (Kaldi nnet3) models"
 readme = "README.md"
 license = { file = "LICENSE" }

@@ -94,6 +94,16 @@ partial, `floor_dbfs` for the room's noise floor, and an optional
 unknown-word symbol. `DecodedSample()` gives the position, in samples fed,
 of the last decoded frame.
 
+With a speaker model, `SpkModel("vosk-model-spk-0.4")` passed as
+`spk_model=` or through `SetSpkModel`, every partial and final and each
+word entry carries `spk`, the speaker vector of its own span, with
+`spk_frames`, `spk_start` and `spk_end`, once the span holds 25 pooled
+10 ms frames. The wheel puts one vector on a final. These follow Kaldi's
+network but not the wheel's normalisation or frame selection
+([TD-14](https://github.com/pyscape/utter/blob/main/docs/td/0014-every-word-carries-the-speaker-evidence-of-its-own-span.md)):
+rebuild speaker profiles from your enrolment audio with utterpy, and do
+not reuse vectors or thresholds from the wheel.
+
 ## Configure
 
 The calls are the wheel's, so switching is the import. The setup the

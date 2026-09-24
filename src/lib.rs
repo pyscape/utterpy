@@ -32,12 +32,36 @@ impl PyModel {
     }
 }
 
-/// The recognizer owns a clone of the model handle so the borrow lives as long as it does.
+/// vosk's SpkModel: a speaker model directory (the vosk-model-spk-0.4 layout).
+#[pyclass(name = "SpkModel", frozen)]
+struct PySpkModel {
+    inner: Arc<utter::SpeakerModel>,
+}
+
+#[pymethods]
+impl PySpkModel {
+    #[new]
+    fn new(path: &str) -> PyResult<Self> {
+        let model = utter::SpeakerModel::open(std::path::Path::new(path))
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+        Ok(PySpkModel {
+            inner: Arc::new(model),
+        })
+    }
+
+    /// The length of the speaker vector.
+    fn dim(&self) -> usize {
+        self.inner.dim()
+    }
+}
+
+/// The recognizer owns clones of the model handles so the borrows live as long as it does.
 #[pyclass(name = "KaldiRecognizer")]
 struct PyRecognizer {
-    // Declared first so it is dropped before the model handle it borrows from.
+    // Declared first so it is dropped before the model handles it borrows from.
     inner: utter::Recognizer<'static>,
     _model: Arc<utter::Model>,
+    spk_model: Option<Arc<utter::SpeakerModel>>,
 }
 
 fn options(unknown_cost: Option<f32>) -> utter::recognizer::RecognizerOptions {
@@ -52,12 +76,13 @@ impl PyRecognizer {
     /// `KaldiRecognizer(model, sample_rate, grammar_json)`; the grammar is a JSON array of
     /// strings as vosk takes it. `unknown_cost` adds the model's unknown-word symbol.
     #[new]
-    #[pyo3(signature = (model, sample_rate, grammar, unknown_cost = None))]
+    #[pyo3(signature = (model, sample_rate, grammar, unknown_cost = None, spk_model = None))]
     fn new(
         model: &PyModel,
         sample_rate: f32,
         grammar: &str,
         unknown_cost: Option<f32>,
+        spk_model: Option<&PySpkModel>,
     ) -> PyResult<Self> {
         let words = utter::json::parse_string_array(grammar)
             .map_err(|e| PyValueError::new_err(e.to_string()))?;
@@ -68,7 +93,26 @@ impl PyRecognizer {
         let inner =
             utter::Recognizer::with_options(model_ref, sample_rate, &words, &options(unknown_cost))
                 .map_err(|e| PyValueError::new_err(e.to_string()))?;
-        Ok(PyRecognizer { inner, _model: arc })
+        let mut rec = PyRecognizer {
+            inner,
+            _model: arc,
+            spk_model: None,
+        };
+        rec.SetSpkModel(spk_model)?;
+        Ok(rec)
+    }
+
+    /// vosk's SetSpkModel; None removes it. Audio already fed in the current stream counts.
+    fn SetSpkModel(&mut self, spk_model: Option<&PySpkModel>) -> PyResult<()> {
+        let arc = spk_model.map(|m| m.inner.clone());
+        // As with the model: the Arc stored below outlives the reference the recognizer holds.
+        let spk_ref: Option<&'static utter::SpeakerModel> =
+            arc.as_ref().map(|a| unsafe { &*Arc::as_ptr(a) });
+        self.inner
+            .set_spk_model(spk_ref)
+            .map_err(|e| PyValueError::new_err(e.to_string()))?;
+        self.spk_model = arc;
+        Ok(())
     }
 
     /// Any value Python considers truthy, as the vosk wheel accepts.
@@ -147,6 +191,7 @@ fn SetLogLevel(_level: i32) {}
 #[pymodule]
 fn _utterpy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyModel>()?;
+    m.add_class::<PySpkModel>()?;
     m.add_class::<PyRecognizer>()?;
     m.add("Recognizer", m.getattr("KaldiRecognizer")?)?;
     m.add_function(wrap_pyfunction!(SetLogLevel, m)?)?;
