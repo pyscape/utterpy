@@ -104,6 +104,15 @@ network but not the wheel's normalisation or frame selection
 rebuild speaker profiles from your enrolment audio with utterpy, and do
 not reuse vectors or thresholds from the wheel.
 
+A TitaNet-small directory, as utter's `scripts/titanet_convert.py`
+writes it, opens the same way and gives 192-number vectors
+([TD-15](https://github.com/pyscape/utter/blob/main/docs/td/0015-titanet-small-is-a-native-speaker-model.md)).
+Its evidence rides the word entries only, and it is embedded between
+decoder advances, so feed blocks shorter than one decoder chunk: 40 ms
+works. `SpkModel.embed(data, sample_rate=16000)` embeds any span of
+little-endian float32 samples in [-1, 1] without a recognizer, 25 ms to
+30 s, at 16 kHz or faster; an x-vector model raises ValueError.
+
 ## Configure
 
 The calls are the wheel's, so switching is the import. The setup the

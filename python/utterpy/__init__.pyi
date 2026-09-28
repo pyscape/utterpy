@@ -23,11 +23,18 @@ class Model:
 
 @final
 class SpkModel:
-    """vosk's SpkModel: a speaker model directory (the vosk-model-spk-0.4 layout)."""
+    """vosk's SpkModel: a speaker model directory, the vosk-model-spk-0.4 layout or TitaNet-small."""
 
     def __new__(cls, path: str) -> SpkModel: ...
     def dim(self) -> int:
         """The length of the speaker vector."""
+
+    def embed(self, data: bytes, sample_rate: float = 16000.0) -> list[float]:
+        """The TitaNet embedding of a span without a recognizer.
+
+        Little-endian float32 samples in [-1, 1] at sample_rate Hz, 16 kHz or faster.
+        ValueError for an x-vector model, and on a span under 25 ms or over 30 s.
+        """
 
 @final
 class KaldiRecognizer:
@@ -47,7 +54,8 @@ class KaldiRecognizer:
         """vosk's SetSpkModel; None removes it. Audio already fed in the current stream counts.
 
         While set, a span of at least 25 pooled 10 ms frames carries "spk", "spk_frames",
-        "spk_start" and "spk_end" at the top level and on every word entry.
+        "spk_start" and "spk_end" at the top level and on every word entry. A TitaNet model
+        puts them on word entries only.
         """
 
     def SetWords(self, on: Any) -> None:

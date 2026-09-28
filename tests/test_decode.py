@@ -54,6 +54,14 @@ def spk_model() -> utterpy.SpkModel:
 
 
 @pytest.fixture(scope="module")
+def titanet() -> utterpy.SpkModel:
+    named = os.environ.get("UTTER_TEST_TITANET")
+    if not named:
+        pytest.skip("no TitaNet model: set UTTER_TEST_TITANET")
+    return utterpy.SpkModel(named)
+
+
+@pytest.fixture(scope="module")
 def model() -> utterpy.Model:
     path = model_path()
     if path is None:
@@ -204,3 +212,51 @@ def test_no_speaker_keys_without_or_after_removing_the_model(model: utterpy.Mode
     rec.SetSpkModel(None)
     for reading in stream(rec, clip("stop") + SECOND_OF_SILENCE):
         assert not any(k in reading for k in SPK_KEYS)
+
+
+def floats(pcm: bytes) -> bytes:
+    samples = struct.unpack(f"<{len(pcm) // 2}h", pcm)
+    return struct.pack(f"<{len(samples)}f", *(x / 32768 for x in samples))
+
+
+def test_dim_names_each_model(spk_model: utterpy.SpkModel, titanet: utterpy.SpkModel) -> None:
+    assert spk_model.dim() == 128
+    assert titanet.dim() == 192
+
+
+def test_titanet_embeds_a_span_without_a_recognizer(titanet: utterpy.SpkModel) -> None:
+    pcm = floats(clip("yes"))
+    vector = titanet.embed(pcm)
+    assert len(vector) == 192
+    assert vector == titanet.embed(pcm)
+
+
+@pytest.mark.parametrize("seconds", [0.02, 31.0])
+def test_embed_refuses_a_span_too_short_or_too_long(titanet: utterpy.SpkModel, seconds: float) -> None:
+    with pytest.raises(ValueError):
+        titanet.embed(bytes(4 * int(16000 * seconds)))
+
+
+def test_embed_refuses_a_rate_under_16_khz(titanet: utterpy.SpkModel) -> None:
+    with pytest.raises(ValueError):
+        titanet.embed(floats(clip("yes")), 8000)
+
+
+def test_embed_refuses_bytes_that_are_not_float32(titanet: utterpy.SpkModel) -> None:
+    with pytest.raises(ValueError):
+        titanet.embed(bytes(4 * 16000 + 2))
+
+
+def test_x_vector_has_no_stateless_embedding(spk_model: utterpy.SpkModel) -> None:
+    with pytest.raises(ValueError):
+        spk_model.embed(floats(clip("yes")))
+
+
+def test_titanet_evidence_rides_the_words_not_the_result(model: utterpy.Model, titanet: utterpy.SpkModel) -> None:
+    rec = recognizer(model)
+    rec.SetSpkModel(titanet)
+    readings = stream(rec, clip("yes") + SECOND_OF_SILENCE)
+    final = worded_finals(readings)[0]
+    assert all(len(word["spk"]) == 192 for word in final["result"])
+    assert all(k in word for word in final["result"] for k in SPK_KEYS)
+    assert not any(k in reading for reading in readings for k in SPK_KEYS)
