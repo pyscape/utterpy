@@ -142,6 +142,39 @@ jobs:
             curl -sSL -o model.zip "https://alphacephei.com/vosk/models/$name.zip"
             unzip -q model.zip -d models
           done
+      # The conversion script and its pins come from the utter tag the wheel builds against,
+      # since weights.bin carries a format version the crate checks.
+      - id: utter
+        run: |
+          version=$(awk '/^name = "utter"$/ { getline; print $3 }' Cargo.lock | tr -d '"')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        id: titanet
+        with:
+          path: models/titanet-small
+          key: titanet-small-ad4a1802-utter-${{ steps.utter.outputs.version }}
+      - if: steps.titanet.outputs.cache-hit != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          repository: pyscape/utter
+          ref: v${{ steps.utter.outputs.version }}
+          path: utter-src
+          sparse-checkout: |
+            scripts/titanet_convert.py
+            .github/requirements/titanet.txt
+          sparse-checkout-cone-mode: false
+      - name: Download and convert TitaNet-small
+        if: steps.titanet.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p models
+          curl -sfL -o titanet-small.onnx \
+            https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_titanet_small.onnx
+          echo "ad4a1802485d8b34c722d2a9d04249662f2ece5d28a7a039063ca22f515a789e  titanet-small.onnx" \
+            | sha256sum --check
+          python -m venv convert
+          convert/bin/pip install --require-hashes -r utter-src/.github/requirements/titanet.txt
+          convert/bin/python utter-src/scripts/titanet_convert.py titanet-small.onnx models/titanet-small
+          rm -rf convert utter-src titanet-small.onnx
       - run: |
           python -m pip install --no-index --find-links dist utterpy
           python -m pip install "pytest<9"

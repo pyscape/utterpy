@@ -45,6 +45,18 @@ def spk_model_path() -> Path | None:
     return None
 
 
+def titanet_path() -> Path | None:
+    named = os.environ.get("UTTER_TEST_TITANET_MODEL")
+    if named:
+        return Path(named)
+    models = Path(__file__).resolve().parent.parent / "models"
+    if models.is_dir():
+        for entry in sorted(models.iterdir()):
+            if (entry / "titanet.conf").is_file():
+                return entry
+    return None
+
+
 @pytest.fixture(scope="module")
 def spk_model() -> utterpy.SpkModel:
     path = spk_model_path()
@@ -55,10 +67,10 @@ def spk_model() -> utterpy.SpkModel:
 
 @pytest.fixture(scope="module")
 def titanet() -> utterpy.SpkModel:
-    named = os.environ.get("UTTER_TEST_TITANET")
-    if not named:
-        pytest.skip("no TitaNet model: set UTTER_TEST_TITANET")
-    return utterpy.SpkModel(named)
+    path = titanet_path()
+    if path is None:
+        pytest.skip("no TitaNet model: set UTTER_TEST_TITANET_MODEL or convert one under models/")
+    return utterpy.SpkModel(str(path))
 
 
 @pytest.fixture(scope="module")

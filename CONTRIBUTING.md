@@ -24,7 +24,7 @@ opening the request, from a venv with `pip install --require-hashes -r
   stub and the binary agree
 - `pytest tests` against a stock model, with `UTTER_TEST_MODEL` naming
   its directory and `UTTER_TEST_SPK_MODEL` a speaker model's, and
-  `UTTER_TEST_TITANET` a TitaNet-small directory's for its tests;
+  `UTTER_TEST_TITANET_MODEL` a TitaNet-small directory's for its tests;
   without one `python tests/smoke.py` checks the surface
 - `typos`, `yamllint --strict .`, markdownlint and taplo over the prose
   and configs
