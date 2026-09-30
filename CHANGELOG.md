@@ -6,8 +6,6 @@ releases.
 
 ## 0.0.6
 
-### Added
-
 - TitaNet-small speaker evidence, from utter 0.0.6: `SpkModel(path)`
   also opens a TitaNet-small directory converted by utter's
   scripts/titanet_convert.py, and `dim()` is 192. Set on a recognizer,
@@ -24,9 +22,6 @@ releases.
   `certainty_outside`, `words_frames`, `outside_frames`, `band_db`,
   `band_sd_db`, `rise_start_sample`, `rise_ms` and `rise_db`. With the
   keys taken out every result is 0.0.5's byte for byte.
-
-### Fixed
-
 - A stream's heap no longer grows with its length: at 20 minutes
   without a speaker model, 17.9 MiB where 0.0.5 held 246 MiB.
 
