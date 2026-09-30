@@ -23,9 +23,4 @@ jobs:
             --exclude-path target
             --exclude-path .venv
             '**/*.md'
-            --no-progress
-            --exclude '^https://pypi\.org/project/utterpy/'
-            --exclude-path target
-            --exclude-path .venv
-            '**/*.md'
           fail: true
