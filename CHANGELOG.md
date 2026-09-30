@@ -4,13 +4,31 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
-## Unreleased
+## 0.0.6
 
-- TitaNet-small speaker models, from utter 0.0.6: `SpkModel(path)`
-  opens one, `dim()` is 192, and `spk`, `spk_frames`, `spk_start` and
-  `spk_end` ride the word entries only.
-- `SpkModel.embed(data, sample_rate=16000)`: the TitaNet embedding of a
-  span of float32 samples without a recognizer, with the GIL released.
+### Added
+
+- TitaNet-small speaker evidence, from utter 0.0.6: `SpkModel(path)`
+  also opens a TitaNet-small directory converted by utter's
+  scripts/titanet_convert.py, and `dim()` is 192. Set on a recognizer,
+  it embeds each word's span on a thread of the recognizer's own, and
+  the word's entry carries `spk`, `spk_frames`, `spk_start` and
+  `spk_end`; partials and finals carry no top-level evidence. Needs
+  audio at 16 kHz or faster. One word clears a gate at 1% false accept
+  81.2% of the time, against 41.6% with the x-vector, which stays for
+  audio below 16 kHz.
+- `SpkModel.embed(data, sample_rate=16000)`: the embedding of a span of
+  float32 samples without a recognizer, with the GIL released.
+- The acoustic model's certainty and the sound outside words, on every
+  partial and final, always on: `certainty_words`,
+  `certainty_outside`, `words_frames`, `outside_frames`, `band_db`,
+  `band_sd_db`, `rise_start_sample`, `rise_ms` and `rise_db`. With the
+  keys taken out every result is 0.0.5's byte for byte.
+
+### Fixed
+
+- A stream's heap no longer grows with its length: at 20 minutes
+  without a speaker model, 17.9 MiB where 0.0.5 held 246 MiB.
 
 ## 0.0.5
 
