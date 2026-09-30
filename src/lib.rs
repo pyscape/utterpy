@@ -32,7 +32,7 @@ impl PyModel {
     }
 }
 
-/// vosk's SpkModel: a speaker model directory (the vosk-model-spk-0.4 layout).
+/// vosk's SpkModel: a speaker model directory, the vosk-model-spk-0.4 layout or TitaNet-small.
 #[pyclass(name = "SpkModel", frozen)]
 struct PySpkModel {
     inner: Arc<utter::SpeakerModel>,
@@ -52,6 +52,30 @@ impl PySpkModel {
     /// The length of the speaker vector.
     fn dim(&self) -> usize {
         self.inner.dim()
+    }
+
+    /// The TitaNet embedding of a span without a recognizer: little-endian float32 samples in
+    /// [-1, 1] at sample_rate Hz, 16 kHz or faster. ValueError for an x-vector model, and on a
+    /// span under 25 ms or over 30 s.
+    #[pyo3(signature = (data, sample_rate = 16000.0))]
+    fn embed(
+        &self,
+        py: Python<'_>,
+        data: &Bound<'_, PyBytes>,
+        sample_rate: f32,
+    ) -> PyResult<Vec<f32>> {
+        let bytes = data.as_bytes();
+        if bytes.len() % 4 != 0 {
+            return Err(PyValueError::new_err(
+                "embed wants float32 samples: a multiple of four bytes",
+            ));
+        }
+        let samples: Vec<f32> = bytes
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+            .collect();
+        py.detach(|| self.inner.embed_at_rate(&samples, sample_rate))
+            .map_err(|e| PyValueError::new_err(e.to_string()))
     }
 }
 

@@ -4,6 +4,14 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
+## Unreleased
+
+- TitaNet-small speaker models, from utter 0.0.6: `SpkModel(path)`
+  opens one, `dim()` is 192, and `spk`, `spk_frames`, `spk_start` and
+  `spk_end` ride the word entries only.
+- `SpkModel.embed(data, sample_rate=16000)`: the TitaNet embedding of a
+  span of float32 samples without a recognizer, with the GIL released.
+
 ## 0.0.5
 
 ### Added
