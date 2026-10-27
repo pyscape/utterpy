@@ -4,6 +4,14 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
+## Unreleased
+
+- `SetMergeMargin(nats)`, from utter 0.0.7: where two paths with
+  different words meet in the search, the loser is kept when within
+  `nats` of the winner and listed among `partial_alternatives` and the
+  final's `alternatives`. Rank 0 and every endpoint are unchanged; 0 or
+  None removes it, and it is off by default.
+
 ## 0.0.6
 
 - TitaNet-small speaker evidence, from utter 0.0.6: `SpkModel(path)`
