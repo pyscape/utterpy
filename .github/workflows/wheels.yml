@@ -116,7 +116,8 @@ jobs:
 
   test:
     needs: linux
-    runs-on: ubuntu-latest
+    # setup-python builds 3.9 for no Ubuntu past 24.04.
+    runs-on: ${{ matrix.python == '3.9' && 'ubuntu-24.04' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
