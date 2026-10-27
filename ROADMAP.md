@@ -11,7 +11,7 @@ about it.
 Not yet on PyPI. The binding covers the vosk wheel's surface plus the
 host endpoint bound and its floor margin, builds wheels for Linux,
 Windows and macOS on every push, and runs its tests on Python 3.9 to
-3.14. The first release ships against the next release of utter.
+3.15. The first release ships against the next release of utter.
 
 ## Planned
 

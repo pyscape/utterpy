@@ -206,7 +206,7 @@ sees the API without a separate stubs package.
 
 GitHub Actions builds wheels for Linux x86_64 and aarch64 (manylinux
 2_28 and musllinux 1.2), Windows x64 and arm64, and macOS x86_64 and
-arm64 on every push, runs the tests on Python 3.9 to 3.14, and on a
+arm64 on every push, runs the tests on Python 3.9 to 3.15, and on a
 `v*` tag attaches them to a GitHub release with the notes under
 `docs/release-notes` as its body and publishes to PyPI through trusted
 publishing. Every wheel carries a build-provenance attestation, and the
