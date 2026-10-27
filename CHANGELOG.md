@@ -4,6 +4,11 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
+## Unreleased
+
+- Python 3.15: tested in CI and listed in the classifiers. The abi3
+  wheels were already installable on it.
+
 ## 0.0.6
 
 - TitaNet-small speaker evidence, from utter 0.0.6: `SpkModel(path)`
