@@ -12,6 +12,9 @@ releases.
   final's `alternatives`. Rank 0 and every endpoint are unchanged; 0 or
   None removes it, and it is off by default.
 
+- Python 3.15: tested in CI and listed in the classifiers. The abi3
+  wheels were already installable on it.
+
 ## 0.0.6
 
 - TitaNet-small speaker evidence, from utter 0.0.6: `SpkModel(path)`
