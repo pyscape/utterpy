@@ -165,6 +165,11 @@ impl PyRecognizer {
         self.inner
             .set_endpoint_floor_margin(margin_db.filter(|&m| m > 0.0));
     }
+    /// Keep a reading a merge overwrites when within `nats` of the path that wins it, reported
+    /// among the partial's and the final's alternatives. Rank 0 is unchanged. 0 or None removes it.
+    fn SetMergeMargin(&mut self, nats: Option<f32>) {
+        self.inner.set_merge_margin(nats.filter(|&n| n > 0.0));
+    }
     fn SetPartialAlternatives(&mut self, n: usize) {
         self.inner.set_alternatives(n);
     }

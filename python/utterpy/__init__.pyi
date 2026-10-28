@@ -76,6 +76,13 @@ class KaldiRecognizer:
         frames are not. Such a final names "floor" as its endpoint. 0 or None removes the margin.
         """
 
+    def SetMergeMargin(self, nats: float | None) -> None:
+        """Keep a reading a merge overwrites when within nats of the path that wins it.
+
+        Kept readings are listed among partial_alternatives and the final's alternatives like
+        any other. Rank 0 is unchanged. 0 or None removes the margin.
+        """
+
     def SetPartialAlternatives(self, n: int) -> None: ...
     def SetMaxAlternatives(self, n: int) -> None: ...
     def AcceptWaveform(self, data: bytes) -> bool:

@@ -179,6 +179,22 @@ def test_floor_margin_does_not_cut_a_word_short(model: utterpy.Model) -> None:
     assert closing(6.0) == closing(None)
 
 
+def test_merge_margin_adds_readings_and_keeps_rank_0(model: utterpy.Model) -> None:
+    def finals(margin: float | None) -> list[dict[str, Any]]:
+        rec = recognizer(model)
+        rec.SetMaxAlternatives(4)
+        rec.SetMergeMargin(margin)
+        return [r for r in stream(rec, clip("stop") + SECOND_OF_SILENCE) if "partial" not in r]
+
+    def texts(fs: list[dict[str, Any]]) -> set[str]:
+        return {a["text"] for f in fs for a in f["alternatives"]}
+
+    off, kept = finals(None), finals(30.0)
+    assert [f["alternatives"][0] for f in kept] == [f["alternatives"][0] for f in off]
+    assert texts(kept) - texts(off)
+    assert finals(0.0) == off
+
+
 def test_decoded_sample_tracks_the_audio_fed(model: utterpy.Model) -> None:
     rec = recognizer(model)
     pcm = clip("no")

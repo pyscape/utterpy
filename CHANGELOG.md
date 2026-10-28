@@ -6,6 +6,11 @@ releases.
 
 ## Unreleased
 
+- `SetMergeMargin(nats)`, from utter 0.0.7: where two paths with
+  different words meet in the search, the loser is kept when within
+  `nats` of the winner and listed among `partial_alternatives` and the
+  final's `alternatives`. Rank 0 and every endpoint are unchanged; 0 or
+  None removes it, and it is off by default.
 - Python 3.15: tested in CI and listed in the classifiers. The abi3
   wheels were already installable on it.
 

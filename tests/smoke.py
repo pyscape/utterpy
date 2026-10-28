@@ -17,6 +17,7 @@ for name in [
     "SetMaxAlternatives",
     "SetEndpointBound",
     "SetEndpointFloorMargin",
+    "SetMergeMargin",
     "SetSpkModel",
     "AcceptWaveform",
     "PartialResult",
