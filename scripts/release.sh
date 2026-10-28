@@ -45,7 +45,7 @@ ok "tag $tag is free"
 [ "$(git config --get tag.gpgSign)" = true ] || fail "tag.gpgSign is not on; the tag must be signed"
 ok "tags are signed"
 # The workflow publishes only while this variable is true, so the PyPI checks follow it.
-pypi=$(gh variable get PYPI_PUBLISH 2>/dev/null || true)
+pypi=$(gh api "repos/{owner}/{repo}/actions/variables/PYPI_PUBLISH" --jq .value 2>/dev/null || true)
 if [ "$pypi" = true ]; then
     code=$(curl -s -o /dev/null -w '%{http_code}' -A "utterpy release script" "https://pypi.org/pypi/utterpy/$version/json")
     [ "$code" = 404 ] || fail "PyPI answers $code for utterpy $version; expected 404 before publishing"

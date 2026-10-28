@@ -4,7 +4,7 @@ Notable changes to the wheel, newest first. The project follows semantic
 versioning; release dates are recorded by the git tags and the GitHub
 releases.
 
-## Unreleased
+## 0.0.7
 
 - `SetMergeMargin(nats)`, from utter 0.0.7: where two paths with
   different words meet in the search, the loser is kept when within

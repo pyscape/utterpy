@@ -8,15 +8,13 @@ about it.
 
 ## Where the project is
 
-Not yet on PyPI. The binding covers the vosk wheel's surface plus the
-host endpoint bound and its floor margin, builds wheels for Linux,
-Windows and macOS on every push, and runs its tests on Python 3.9 to
-3.15. The first release ships against the next release of utter.
+On PyPI, through trusted publishing, since 0.0.6. The binding covers
+the vosk wheel's surface plus the host endpoint bound and its floor
+margin, builds wheels for Linux, Windows and macOS on every push, and
+runs its tests on Python 3.9 to 3.15.
 
 ## Planned
 
-- **The first PyPI release**, through trusted publishing, with every
-  wheel attested and the release carrying its Sigstore bundle.
 - **Track each utter release.** A crate release is followed by a wheel
   pinned to it, with the changelog naming what changed for a Python
   host. The pin is a version on crates.io, never a commit.

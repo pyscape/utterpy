@@ -132,7 +132,7 @@ checksum = "605813c04049b949f14666340cc4c19ef77c9c0bc8194f464f456bbda0aaa18e"
 
 [[package]]
 name = "utterpy"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "pyo3",
  "utter",
