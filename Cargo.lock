@@ -126,9 +126,9 @@ checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
 name = "utter"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7c2fcc627bdb733e73bc4a79adf7e943697dc6a4cfb24e79997505675fae232"
+checksum = "605813c04049b949f14666340cc4c19ef77c9c0bc8194f464f456bbda0aaa18e"
 
 [[package]]
 name = "utterpy"
