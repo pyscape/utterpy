@@ -70,7 +70,7 @@ jobs:
         run: pip install .
       - run: mypy --strict tests
       - run: python -m mypy.stubtest utterpy
-      - uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b  # v1.51.1
+      - uses: crate-ci/typos@276087d9a4f06398b3e04825487805e2d7375888  # v1.52.2
       - run: yamllint --strict .
       - run: npx --yes markdownlint-cli2@0.23.2
       - run: |
